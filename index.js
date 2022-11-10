@@ -96,7 +96,7 @@ async function run() {
         res.send(result);
     })
 
-    app.patch('/reviews/:id', verifyJWT, async (req, res) => {
+    app.patch('/reviews/:id', async (req, res) => {
         const id = req.params.id;
         const status = req.body.status
         const query = { _id: ObjectId(id) }
@@ -109,7 +109,7 @@ async function run() {
         res.send(result);
     })
 
-  } catch (error) {
+  } catch (err) {
     console.log(err.name, err.message);
   }
 }
