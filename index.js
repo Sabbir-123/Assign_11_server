@@ -12,6 +12,7 @@ app.get("/", (req, res) => {
   res.send("Assignment 11 is running on server");
 });
 
+// const uri = "mongodb+srv://assignment-11:P9KB6879sVysynzB@cluster0.j4x9j8z.mongodb.net/?retryWrites=true&w=majority";
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.j4x9j8z.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
@@ -21,7 +22,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
     const myServiceCollection = client.db("assignment").collection("services");
     const reviewCollection = client.db("assignment").collection("reviews");
     app.get("/services", async (req, res) => {
@@ -109,8 +109,8 @@ async function run() {
         res.send(result);
     })
 
-  } catch (err) {
-    console.log(err.name, err.message);
+  } finally  {
+    
   }
 }
 
