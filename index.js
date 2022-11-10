@@ -60,15 +60,54 @@ async function run() {
       res.send(result);
     });
     app.get("/reviews", async (req, res) => {
-        const cursor = reviewCollection.find({});
+        let query = {}
+        if(req.query.title){
+            query= {
+                title: req.query.title
+            }
+        }
+        const cursor = reviewCollection.find(query).sort();
         const service = await cursor.toArray();
         res.send(service);
+      });
+      app.get("/myreviews", async (req, res) => {
+        const decodedEmail = req?.decoded?.email;
+        const email = req?.query?.email;
+        if (email === decodedEmail){
+            const query = {email: email}
+            const cursor = reviewCollection.find(query).sort({_id: -1});
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+
+        }else{
+            res.status(403).send({message: 'Forbidden Access'})
+        }
+        
+        
+        
       });
 
 
 
+      app.delete('/reviews/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await reviewCollection.deleteOne(query);
+        res.send(result);
+    })
 
-
+    app.patch('/reviews/:id', verifyJWT, async (req, res) => {
+        const id = req.params.id;
+        const status = req.body.status
+        const query = { _id: ObjectId(id) }
+        const updatedDoc = {
+            $set:{
+                status: status
+            }
+        }
+        const result = await reviewCollection.updateOne(query, updatedDoc);
+        res.send(result);
+    })
 
   } catch (error) {
     console.log(err.name, err.message);
