@@ -24,12 +24,20 @@ async function run() {
   try {
     const myServiceCollection = client.db("assignment").collection("services");
     const reviewCollection = client.db("assignment").collection("reviews");
+    const blogsCollection = client.db("assignment").collection("blogs");
     app.get("/services", async (req, res) => {
       const query = {};
       const cursor = myServiceCollection.find(query);
       const services = await cursor.toArray();
       res.send(services);
     });
+
+    app.get("/blogs", async (req, res) => {
+        const query = {};
+        const cursor = blogsCollection.find(query);
+        const ques = await cursor.toArray();
+        res.send(ques);
+      });
 
     app.get("/services/:id", async (req, res) => {
       const id = req.params.id;
