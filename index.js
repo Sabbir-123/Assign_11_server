@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Assignment 11 is running on server");
+  res.send("Assignment 11 is running on servers");
 });
 
 // const uri = "mongodb+srv://assignment-11:P9KB6879sVysynzB@cluster0.j4x9j8z.mongodb.net/?retryWrites=true&w=majority";
@@ -41,7 +41,8 @@ async function run() {
 
     app.get("/services/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: ObjectId(id) };
+      // const query = { _id: ObjectId(id) };
+      const query = {_id : ObjectId(id)}
       const service = await myServiceCollection.findOne(query);
       res.send(service);
     });
