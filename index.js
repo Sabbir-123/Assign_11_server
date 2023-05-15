@@ -23,13 +23,31 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const myServiceCollection = client.db("assignment").collection("services");
+    const userCollection = client.db("assignment").collection("users");
     const reviewCollection = client.db("assignment").collection("reviews");
     const blogsCollection = client.db("assignment").collection("blogs");
+
+
     app.get("/services", async (req, res) => {
       const query = {};
       const cursor = myServiceCollection.find(query);
       const services = await cursor.toArray();
       res.send(services);
+    });
+
+    app.post("/register", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await userCollection.findOne(query);
+      res.send({ isAdmin: user?.role === "admin" });
     });
 
     app.get("/blogs", async (req, res) => {
@@ -58,16 +76,22 @@ async function run() {
       const result = await myServiceCollection.insertOne(newService);
       res.send(result);
     });
+
     app.get("/addservices", async (req, res) => {
       const cursor = myServiceCollection.find({});
       const service = await cursor.toArray();
       res.send(service);
     });
+
+
     app.post("/addreviews", async (req, res) => {
       const review = req.body;
       const result = await reviewCollection.insertOne(review);
       res.send(result);
     });
+
+
+
     app.get("/reviews", async (req, res) => {
         let query = {}
         if(req.query.title){
@@ -79,23 +103,17 @@ async function run() {
         const service = await cursor.toArray();
         res.send(service);
       });
+
+
       app.get("/myreviews", async (req, res) => {
-        const decodedEmail = req?.decoded?.email;
-        const email = req?.query?.email;
-        if (email === decodedEmail){
-            const query = {email: email}
-            const cursor = reviewCollection.find(query).sort({_id: -1});
-            const reviews = await cursor.toArray();
-            res.send(reviews);
-
-        }else{
-            res.status(403).send({message: 'Forbidden Access'})
-        }
-        
-        
-        
-      });
-
+        const email = req.query.email;
+        const query = { email };
+        const reviews = await reviewCollection.find(query).toArray();
+        res.send(reviews);
+       
+    });
+    
+      
 
 
       app.delete('/reviews/:id', async (req, res) => {
@@ -105,20 +123,33 @@ async function run() {
         res.send(result);
     })
 
-    app.patch('/reviews/:id', async (req, res) => {
-        const id = req.params.id;
-        const status = req.body.status
-        const query = { _id: ObjectId(id) }
-        const updatedDoc = {
-            $set:{
-                status: status
-            }
-        }
-        const result = await reviewCollection.updateOne(query, updatedDoc);
-        res.send(result);
+    app.get('/myeditedreviews/:id', async(req, res)=>{
+      const {id}= req.params;
+      const email = req?.query?.email;
+      const review = await reviewCollection.findOne({_id:ObjectId(id)});
+      res.send(review)
     })
 
-  } finally  {
+    app.patch('/updatereviews/edit/:id', async (req, res) => {
+        const id = req.params;
+        const result = await reviewCollection.updateOne( {_id: ObjectId(id)}, {$set: req.body});
+       if(result.modifiedCount){
+        res.send({
+          success: true,
+          message: `successfullu updated ${req.body.title}`
+        })
+       }else{
+        res.send({
+          success: false,
+          error: "Coudn't Updated the review"
+        })
+       
+      }
+    })
+
+  } 
+  
+  finally  {
     
   }
 }
